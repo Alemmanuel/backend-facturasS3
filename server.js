@@ -7,10 +7,10 @@ const app = express()
 app.use(cors())
 
 const s3 = new S3Client({
-  region: "us-east-1",
+  region: process.env.AWS_REGION || "us-east-1",
   credentials: {
-    accessKeyId: "AKIARU7LTCQPAJAFVBXZ", // Reemplaza con tu access key
-    secretAccessKey: "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", // Reemplaza con tu secret key
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 })
 
@@ -20,7 +20,7 @@ app.get("/get-presigned-url", async (req, res) => {
     const { fileName, fileType } = req.query
 
     const command = new PutObjectCommand({
-      Bucket: "facturas-s3", // 🔹 tu bucket
+      Bucket: process.env.S3_BUCKET_NAME || "facturas-s3", // Using env var for bucket name
       Key: fileName,
       ContentType: fileType,
     })
@@ -34,6 +34,7 @@ app.get("/get-presigned-url", async (req, res) => {
   }
 })
 
-app.listen(3001, () => {
-  console.log("Servidor corriendo en http://localhost:3001")
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`)
 })
