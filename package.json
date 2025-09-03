@@ -1,5 +1,5 @@
 {
-  "name": "render-backend",
+  "name": "backend",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
