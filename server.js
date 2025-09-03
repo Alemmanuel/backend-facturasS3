@@ -5,35 +5,23 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const app = express();
 
-// 🌍 Configuración CORS (localhost + producción)
-const allowedOrigins = [
-  "http://localhost:5500", // para pruebas locales
-  "http://localhost:3000", // si lo corres en React/Vite
-  "https://frontend-facturas-s3.vercel.app/"   // por si lo subes a Vercel
-];
-
+// Configura CORS solo para tu frontend en Vercel y localhost (para pruebas)
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("No autorizado por CORS"));
-    }
-  },
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: [
+    "https://frontend-facturas-s3.vercel.app", // producción
+    "http://localhost:5500",                   // desarrollo (ajusta puerto si es otro)
+  ],
+  methods: ["GET", "POST", "PUT"],
+  allowedHeaders: ["Content-Type"],
 }));
 
-// Cliente S3
-const s3 = new S3Client({ region: "us-east-1" }); // ajusta a tu región
+const s3 = new S3Client({ region: "us-east-1" }); // ajusta región
 
-// Endpoint para generar URL firmada
 app.get("/get-presigned-url", async (req, res) => {
   try {
     const fileName = req.query.fileName;
     const fileType = req.query.fileType;
 
-    // Validación de archivos permitidos
     if (!fileName.endsWith(".pdf") && !fileName.endsWith(".png")) {
       return res.status(400).json({ error: "Solo se permiten facturas PDF o PNG" });
     }
@@ -48,9 +36,9 @@ app.get("/get-presigned-url", async (req, res) => {
 
     res.json({ url });
   } catch (err) {
-    console.error("❌ Error generando presigned URL:", err);
+    console.error(err);
     res.status(500).json({ error: "Error generando URL" });
   }
 });
 
-app.listen(3000, () => console.log("✅ Servidor corriendo en http://localhost:3000"));
+app.listen(3000, () => console.log("Servidor corriendo en http://localhost:3000"));
